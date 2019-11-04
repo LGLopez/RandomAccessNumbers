@@ -7,13 +7,43 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 
 public class FramePrincipal extends javax.swing.JFrame {
     RandomAccessFile raf = null;
     File archivo = new File("numeros.obj");
     
-    public FramePrincipal() {
-        initComponents();
+    DefaultListModel model = new DefaultListModel();
+    
+    public boolean buscar(){
+        double toCheck = Double.parseDouble(txtNumber.getText());
+        
+        if(model.contains(toCheck)){
+            JOptionPane.showMessageDialog(this, "Encontrado!");
+            return true;
+        }
+        else{
+            JOptionPane.showMessageDialog(this, "No encontrado");
+            return false;
+        }
+    }
+    
+    public FramePrincipal(){
+        try {
+            initComponents();
+            int counter = 0;
+            raf = new RandomAccessFile(archivo, "rw");
+            
+            raf.seek(0);
+            
+            while(true){
+                double toShow = raf.readDouble();
+                model.add(counter, toShow);
+                counter++;
+            }
+        } catch (FileNotFoundException ex) {} catch (IOException ex) {}
+        
     }
 
     @SuppressWarnings("unchecked")
@@ -23,8 +53,11 @@ public class FramePrincipal extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         addInicio = new javax.swing.JButton();
         addFinal = new javax.swing.JButton();
-        mostrar = new javax.swing.JButton();
         txtNumber = new javax.swing.JTextField();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        listNumber = new javax.swing.JList<>(model);
+        btnBuscar = new javax.swing.JButton();
+        btnEliminar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -36,11 +69,25 @@ public class FramePrincipal extends javax.swing.JFrame {
         });
 
         addFinal.setText("Agregar al final");
-
-        mostrar.setText("Mostrar");
-        mostrar.addActionListener(new java.awt.event.ActionListener() {
+        addFinal.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mostrarActionPerformed(evt);
+                addFinalActionPerformed(evt);
+            }
+        });
+
+        jScrollPane1.setViewportView(listNumber);
+
+        btnBuscar.setText("Buscar");
+        btnBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuscarActionPerformed(evt);
+            }
+        });
+
+        btnEliminar.setText("Eliminar");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
             }
         });
 
@@ -50,13 +97,16 @@ public class FramePrincipal extends javax.swing.JFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addGap(22, 22, 22)
-                .addComponent(txtNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(txtNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 66, Short.MAX_VALUE)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(addFinal)
+                    .addComponent(addInicio)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(addInicio)
-                        .addComponent(mostrar)))
+                        .addComponent(btnBuscar)
+                        .addComponent(addFinal)
+                        .addComponent(btnEliminar)))
                 .addGap(42, 42, 42))
         );
         jPanel1Layout.setVerticalGroup(
@@ -67,10 +117,15 @@ public class FramePrincipal extends javax.swing.JFrame {
                     .addComponent(addInicio)
                     .addComponent(txtNumber, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(addFinal)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(mostrar)
-                .addContainerGap(159, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(addFinal)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnBuscar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnEliminar))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(86, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -98,32 +153,74 @@ public class FramePrincipal extends javax.swing.JFrame {
             raf.writeDouble(toAdd);
             
             raf.close();
+            
+            if(!model.isEmpty()){
+                model.remove(0);
+                model.add(0, toAdd);
+            }
+            else{
+                model.add(0, toAdd);
+            }
         } catch (FileNotFoundException ex) {} catch (IOException ex) {}
         
         
     }//GEN-LAST:event_addInicioActionPerformed
 
-    private void mostrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mostrarActionPerformed
-        ArrayList<Double> numbers = new ArrayList<>();
+    private void addFinalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFinalActionPerformed
         try {
-            raf = new RandomAccessFile(archivo,"rw");
+            raf = new RandomAccessFile(archivo, "rw");
             
+            raf.seek(raf.length());
+            
+            double toAdd = Double.parseDouble(txtNumber.getText());
+            
+            raf.writeDouble(toAdd);
+            
+            raf.close();
+            
+            model.add(model.getSize(), toAdd);
+
+        } catch (FileNotFoundException ex) {} catch (IOException ex) {}
+    }//GEN-LAST:event_addFinalActionPerformed
+
+    private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
+        buscar();
+    }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        String numberToConvert = txtNumber.getText();
+        double numberToCheck = Double.parseDouble(numberToConvert);
+        int counter =0;
+        try {
+            raf = new RandomAccessFile(archivo, "r");
+        
             raf.seek(0);
             
             while(true){
                 double readDouble = raf.readDouble();
                 
-                numbers.add(readDouble);
-            }
-            
-            for (Double number : numbers) {
-                
+                if(readDouble == numberToCheck){
+                    model.removeElement(readDouble);
+                    raf.close();
+                    archivo.delete();
+                    
+                    archivo.createNewFile();
+                    
+                    raf = new RandomAccessFile(archivo,"rw");
+                    
+                    for(int i=0; i<model.size(); i++){
+                        double toAdd = (double) model.getElementAt(i);
+                        System.out.println(toAdd);
+                        raf.writeDouble(toAdd);
+                    }
+                    return;
+                }
+                counter++;
             }
             
         } catch (FileNotFoundException ex) {} catch (IOException ex) {}
-        
-        
-    }//GEN-LAST:event_mostrarActionPerformed
+        counter = 0;
+    }//GEN-LAST:event_btnEliminarActionPerformed
 
     public static void main(String args[]) {
 
@@ -137,8 +234,11 @@ public class FramePrincipal extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addFinal;
     private javax.swing.JButton addInicio;
+    private javax.swing.JButton btnBuscar;
+    private javax.swing.JButton btnEliminar;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JButton mostrar;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JList<String> listNumber;
     private javax.swing.JTextField txtNumber;
     // End of variables declaration//GEN-END:variables
 }
