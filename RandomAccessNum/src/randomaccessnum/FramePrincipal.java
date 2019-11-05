@@ -58,6 +58,7 @@ public class FramePrincipal extends javax.swing.JFrame {
         listNumber = new javax.swing.JList<>(model);
         btnBuscar = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
+        btnEditar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -91,6 +92,13 @@ public class FramePrincipal extends javax.swing.JFrame {
             }
         });
 
+        btnEditar.setText("Editar");
+        btnEditar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -106,7 +114,8 @@ public class FramePrincipal extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addComponent(btnBuscar)
                         .addComponent(addFinal)
-                        .addComponent(btnEliminar)))
+                        .addComponent(btnEliminar)
+                        .addComponent(btnEditar)))
                 .addGap(42, 42, 42))
         );
         jPanel1Layout.setVerticalGroup(
@@ -123,7 +132,9 @@ public class FramePrincipal extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnBuscar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(btnEliminar))
+                        .addComponent(btnEliminar)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnEditar))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(86, Short.MAX_VALUE))
         );
@@ -210,7 +221,6 @@ public class FramePrincipal extends javax.swing.JFrame {
                     
                     for(int i=0; i<model.size(); i++){
                         double toAdd = (double) model.getElementAt(i);
-                        System.out.println(toAdd);
                         raf.writeDouble(toAdd);
                     }
                     return;
@@ -221,6 +231,47 @@ public class FramePrincipal extends javax.swing.JFrame {
         } catch (FileNotFoundException ex) {} catch (IOException ex) {}
         counter = 0;
     }//GEN-LAST:event_btnEliminarActionPerformed
+
+    private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
+        String numberToConvert = txtNumber.getText();
+        double numberToCheck = Double.parseDouble(numberToConvert);
+        
+        try {
+            raf = new RandomAccessFile(archivo, "r");
+            raf.seek(0);
+            int counter = 0;
+            while(true){
+                double readDouble = raf.readDouble();
+                
+                if(readDouble == numberToCheck){
+                    String toEditS = JOptionPane.showInputDialog(this, "Ingrese el nuevo valor: ");
+                    double toEdit = Double.parseDouble(toEditS);
+                    model.remove(counter);
+                    model.add(counter, toEdit);
+                    
+                    raf.close();
+                    archivo.delete();
+                    
+                    archivo.createNewFile();
+                    
+                    raf = new RandomAccessFile(archivo, "rw");
+                    
+                    for(int i=0; i<model.size(); i++){
+                        double toAdd = (double) model.getElementAt(i);
+                        raf.writeDouble(toAdd);
+                    }
+                    return;
+                    
+                }
+                counter++;
+            }
+            
+        } catch (FileNotFoundException ex) {} catch (IOException ex) {}
+        
+        
+        
+        
+    }//GEN-LAST:event_btnEditarActionPerformed
 
     public static void main(String args[]) {
 
@@ -235,6 +286,7 @@ public class FramePrincipal extends javax.swing.JFrame {
     private javax.swing.JButton addFinal;
     private javax.swing.JButton addInicio;
     private javax.swing.JButton btnBuscar;
+    private javax.swing.JButton btnEditar;
     private javax.swing.JButton btnEliminar;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
